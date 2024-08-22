@@ -58,36 +58,36 @@ resource "aws_security_group" "allow_ssh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [ local.vpc_cidr ]
-    # cidr_blocks = ["0.0.0.0/0"]
+    #cidr_blocks = [ local.vpc_cidr ]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [ local.vpc_cidr ]
-    # cidr_blocks = ["0.0.0.0/0"]
+    #cidr_blocks = [ local.vpc_cidr ]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
+# Data source to get the latest Amazon Linux 2 AMI
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
   owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
 
-resource "aws_instance" "example" {
+resource "aws_instance" "instance" {
   ami               = data.aws_ami.amazon_linux_2.id # Amazon Linux 2 AMI
   instance_type     = "t2.micro"
-  subnet_id         = aws_subnet.private_1a[0].id
+  subnet_id         = aws_subnet.public[0].id
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
-
   tags = {
-    Name = "example-instance"
+    Name = "${var.vpc_cidr}-instance"
   }
 }
